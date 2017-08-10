@@ -8,6 +8,11 @@
 //! result = a + (b * 2)
 //! ```
 
+#![feature(test)]
+extern crate test;
+#[macro_use]
+extern crate lazy_static;
+
 mod hand_written;
 mod single_regex;
 mod multi_regex;

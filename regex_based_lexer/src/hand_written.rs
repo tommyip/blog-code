@@ -107,6 +107,10 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
+
+    use std::fs::File;
+    use std::io::prelude::*;
 
     #[test]
     fn simple_src() {
@@ -126,5 +130,21 @@ mod tests {
             Token(Item::Plus,            Span(32, 1)),
             Token(Item::Integer(42),     Span(34, 2)),
         ]);
+    }
+
+    #[bench]
+    fn benchmark(b: &mut Bencher) {
+        lazy_static! {
+            static ref SRC: String = {
+                let mut file = File::open("src_file").expect("");
+                let mut content = String::new();
+                file.read_to_string(&mut content).expect("");
+
+                content
+            };
+        }
+        b.iter(|| {
+            let _ = Lexer::new(&SRC).lex();
+        });
     }
 }
