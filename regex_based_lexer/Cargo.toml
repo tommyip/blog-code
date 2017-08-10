@@ -1,0 +1,6 @@
+[package]
+name = "regex_based_lexer"
+version = "0.1.0"
+authors = ["Tommy Ip <hkmp7tommy@gmail.com>"]
+
+[dependencies]
