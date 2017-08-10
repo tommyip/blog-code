@@ -37,6 +37,6 @@ def gen_line():
 
 
 if __name__ == '__main__':
-    src = '\n'.join([gen_line() for _ in range(5000)])
+    src = '\n'.join([gen_line() for _ in range(1000000)])
     with open("src_file", 'w') as f:
         f.write(src)
