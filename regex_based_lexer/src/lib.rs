@@ -1,18 +1,26 @@
-// Blog post: WIP title (Hand-written lexer compared to regex-based ones with DFA engine)
-// Comparison between hand-written, single-regex and multi-regex lexer.
-// We try to parse a simple made-up language which looks like:
-// ```
-// a = 12
-// b = 352.54
-// result = a + ( b * 2 )
-// ```
+//! Blog post: Hand-written lexer compared to regex-based ones with DFA engine
+//!
+//! A comparison between hand-written, single-regex and multi-regex lexer.
+//! We try to parse a simple made-up language which looks like:
+//! ```
+//! a = 12
+//! b = 352.54
+//! result = a + (b * 2)
+//! ```
 
 mod hand_written;
 mod single_regex;
 mod multi_regex;
 
 #[derive(Debug, PartialEq)]
-pub enum Op<'a> {
+struct Lexer<'a> {
+    src: &'a str,
+    src_vec: Vec<char>,
+    src_len: usize,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Item<'a> {
     Ident(&'a str),
     Integer(i32),
     Quote(&'a str),
@@ -25,16 +33,16 @@ pub enum Op<'a> {
     RBracket,
 }
 
-// The location and length of the token
-// Example:
-//     "apple = banana + car"
-// The identifier "banana" would have a TokenPos of
-// TokenPos(8, 6)
+/// The location and length of the token
+/// Example:
+///     "apple = banana + car"
+/// The identifier "banana" would have a span of
+/// Span(8, 6)
 #[derive(Debug, PartialEq)]
-pub struct TokenPos(usize, usize);
+pub struct Span(usize, usize);
 
 #[derive(Debug, PartialEq)]
-pub struct Token<'a>(Op<'a>, TokenPos);
+pub struct Token<'a>(Item<'a>, Span);
 
 #[cfg(test)]
 mod tests {

@@ -1,11 +1,4 @@
-use super::{Op, Token, TokenPos};
-
-#[derive(Debug, PartialEq)]
-struct Lexer<'a> {
-    src: &'a str,
-    src_vec: Vec<char>,
-    src_len: usize,
-}
+use super::{Lexer, Item, Token, Span};
 
 impl<'a> Lexer<'a> {
     fn new(src: &'a str) -> Lexer {
@@ -22,6 +15,8 @@ impl<'a> Lexer<'a> {
             match self.src_vec[pointer] {
                 ' ' | '\n' | '\t' | '\r' => {}
                 '/' => {
+                    // Item is a line comment, so we skip over everything
+                    // and stop after a \n token.
                     if self.src_vec[pointer + 1] == '/' {
                         pointer += 2;
                         while pointer < self.src_len &&
@@ -30,12 +25,12 @@ impl<'a> Lexer<'a> {
                             pointer += 1;
                         }
                     } else {
-                        result.push(Token(Op::Divide, TokenPos(pointer, 1)));
+                        result.push(Token(Item::Divide, Span(pointer, 1)));
                     }
                 }
                 c => {
                     if let Some(operator) = Lexer::_get_operator(c) {
-                        result.push(Token(operator, TokenPos(pointer, 1)));
+                        result.push(Token(operator, Span(pointer, 1)));
                     } else if c.is_alphabetic() {
                         result.push(self._get_ident(&mut pointer));
                     } else if c.is_numeric() {
@@ -50,19 +45,20 @@ impl<'a> Lexer<'a> {
         result
     }
 
-    fn _get_operator(character: char) -> Option<Op<'a>> {
+    fn _get_operator(character: char) -> Option<Item<'a>> {
         match character {
-            '+' => Some(Op::Plus),
-            '-' => Some(Op::Minus),
-            '*' => Some(Op::Multiply),
-            '/' => Some(Op::Divide),
-            '=' => Some(Op::Equal),
-            '(' => Some(Op::LBracket),
-            ')' => Some(Op::RBracket),
+            '+' => Some(Item::Plus),
+            '-' => Some(Item::Minus),
+            '*' => Some(Item::Multiply),
+            '/' => Some(Item::Divide),
+            '=' => Some(Item::Equal),
+            '(' => Some(Item::LBracket),
+            ')' => Some(Item::RBracket),
             _   => None
         }
     }
 
+    /// A valid identifier only contains alphabets
     fn _get_ident(&self, pointer: &mut usize) -> Token {
         let mut end_pos = *pointer + 1;
         while end_pos < self.src_len &&
@@ -70,8 +66,8 @@ impl<'a> Lexer<'a> {
         {
             end_pos += 1;
         }
-        let token = Token(Op::Ident(&self.src[*pointer..end_pos]),
-                          TokenPos(*pointer, end_pos - *pointer));
+        let token = Token(Item::Ident(&self.src[*pointer..end_pos]),
+                          Span(*pointer, end_pos - *pointer));
         *pointer = end_pos - 1;
         token
     }
@@ -85,22 +81,22 @@ impl<'a> Lexer<'a> {
         }
 
         let token = Token(
-            Op::Integer(self.src[*pointer..end_pos].parse::<i32>().unwrap()),
-            TokenPos(*pointer, end_pos - *pointer));
+            Item::Integer(self.src[*pointer..end_pos].parse::<i32>().unwrap()),
+            Span(*pointer, end_pos - *pointer));
 
         *pointer = end_pos - 1;
         token
     }
 
-    /// Get strings delimited by qoutes
+    /// Get strings delimited by quotes
     fn _get_quote(&self, pointer: &mut usize) -> Token
     {
         *pointer += 1;
         let span_pos = *pointer;
         loop {
             match self.src_vec[*pointer] {
-                '"' => return Token(Op::Quote(&self.src[span_pos..*pointer]),
-                                    TokenPos(span_pos, *pointer - span_pos)),
+                '"' => return Token(Item::Quote(&self.src[span_pos..*pointer]),
+                                    Span(span_pos, *pointer - span_pos)),
                 '\n' => panic!("Unclosed string"),
                 _ => *pointer += 1,
             }
@@ -118,17 +114,17 @@ mod tests {
         let lexer = Lexer::new(src);
 
         assert_eq!(lexer.lex(), vec![
-            Token(Op::Ident("person"), TokenPos(0, 6)),
-            Token(Op::Equal,           TokenPos(7, 1)),
-            Token(Op::LBracket,        TokenPos(9, 1)),
-            Token(Op::Ident("head"),   TokenPos(10, 4)),
-            Token(Op::Plus,            TokenPos(15, 1)),
-            Token(Op::Ident("body"),   TokenPos(17, 4)),
-            Token(Op::RBracket,        TokenPos(21, 1)),
-            Token(Op::Multiply,        TokenPos(23, 1)),
-            Token(Op::Quote("mind"),   TokenPos(26, 4)),
-            Token(Op::Plus,            TokenPos(32, 1)),
-            Token(Op::Integer(42),     TokenPos(34, 2)),
+            Token(Item::Ident("person"), Span(0, 6)),
+            Token(Item::Equal,           Span(7, 1)),
+            Token(Item::LBracket,        Span(9, 1)),
+            Token(Item::Ident("head"),   Span(10, 4)),
+            Token(Item::Plus,            Span(15, 1)),
+            Token(Item::Ident("body"),   Span(17, 4)),
+            Token(Item::RBracket,        Span(21, 1)),
+            Token(Item::Multiply,        Span(23, 1)),
+            Token(Item::Quote("mind"),   Span(26, 4)),
+            Token(Item::Plus,            Span(32, 1)),
+            Token(Item::Integer(42),     Span(34, 2)),
         ]);
     }
 }
