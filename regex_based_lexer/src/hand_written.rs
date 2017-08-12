@@ -1,4 +1,11 @@
-use super::{Lexer, Item, Token, Span};
+use super::{Item, Token, Span};
+
+#[derive(Debug, PartialEq)]
+struct Lexer<'a> {
+    src: &'a str,
+    src_vec: Vec<char>,
+    src_len: usize,
+}
 
 impl<'a> Lexer<'a> {
     fn new(src: &'a str) -> Lexer {

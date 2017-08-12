@@ -9,22 +9,17 @@
 //! ```
 
 #![feature(test)]
+
 extern crate test;
 #[macro_use]
 extern crate lazy_static;
+extern crate regex;
 
 mod hand_written;
 mod single_regex;
 mod multi_regex;
 
-#[derive(Debug, PartialEq)]
-struct Lexer<'a> {
-    src: &'a str,
-    src_vec: Vec<char>,
-    src_len: usize,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Item<'a> {
     Ident(&'a str),
     Integer(i32),
