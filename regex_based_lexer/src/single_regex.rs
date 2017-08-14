@@ -128,8 +128,9 @@ mod tests {
                 content
             };
         }
+        let lexer = Lexer::new(&SRC);
         b.iter(|| {
-            let _ = Lexer::new(&SRC).lex();
+            let _ = lexer.lex();
         });
     }
 }
