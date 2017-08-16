@@ -1,6 +1,6 @@
 //! Blog post: Hand-written lexer compared to regex-based ones with DFA engine
 //!
-//! A comparison between hand-written, single-regex and multi-regex lexer.
+//! A comparison between hand-written, multi-regex and single-regex lexer.
 //! We try to parse a simple made-up language which looks like:
 //! ```
 //! a = 12
@@ -16,8 +16,8 @@ extern crate lazy_static;
 extern crate regex;
 
 mod hand_written;
-mod single_regex;
 mod multi_regex;
+mod single_regex;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Item<'a> {
