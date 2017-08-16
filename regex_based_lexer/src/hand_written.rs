@@ -105,9 +105,7 @@ impl<'a> Lexer<'a> {
             match self.src_vec[*pointer] {
                 '"' => {
                     *pointer += 1;
-                    return Token(Item::Quote,
-                                 &self.src[lo..*pointer],
-                                 Span(lo, *pointer));
+                    return Token(Item::Quote, &self.src[lo..*pointer], Span(lo, *pointer));
                 }
                 '\n' => panic!("Unclosed string"),
                 _ => *pointer += 1,
