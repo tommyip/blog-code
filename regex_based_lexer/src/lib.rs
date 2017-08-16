@@ -20,10 +20,10 @@ mod multi_regex;
 mod single_regex;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Item<'a> {
-    Ident(&'a str),
-    Integer(i32),
-    Quote(&'a str),
+pub enum Item {
+    Ident,
+    Integer,
+    Quote,
     Plus,
     Minus,
     Multiply,
@@ -33,16 +33,17 @@ pub enum Item<'a> {
     RBracket,
 }
 
-/// The location and length of the token
+/// The location of the token
 /// Example:
 ///     "apple = banana + car"
 /// The identifier "banana" would have a span of
-/// Span(8, 6)
+/// Span(8, 13)
 #[derive(Debug, PartialEq)]
 pub struct Span(usize, usize);
 
+/// Token(type, value, span)
 #[derive(Debug, PartialEq)]
-pub struct Token<'a>(Item<'a>, Span);
+pub struct Token<'a>(Item, &'a str, Span);
 
 #[cfg(test)]
 mod tests {
