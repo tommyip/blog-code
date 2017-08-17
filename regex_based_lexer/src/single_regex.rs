@@ -1,17 +1,38 @@
 use super::{Item, Token, Span};
 
 use regex::Regex;
+use std::str::FromStr;
 
-static RULES: [(Item, &str); 10] = [(Item::Plus, r"\+"),
-                                    (Item::Minus, r"\-"),
-                                    (Item::Multiply, r"\*"),
-                                    (Item::Divide, r"/"),
-                                    (Item::Equal, r"="),
-                                    (Item::LBracket, r"\("),
-                                    (Item::RBracket, r"\)"),
-                                    (Item::Integer, r"\d+"),
-                                    (Item::Ident, r"\w+"),
-                                    (Item::Quote, "^\"[^\n]*?\"")];
+impl FromStr for Item {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Item, ()> {
+        match s {
+            "Plus" => Ok(Item::Plus),
+            "Minus" => Ok(Item::Minus),
+            "Multiply" => Ok(Item::Multiply),
+            "Divide" => Ok(Item::Divide),
+            "Equal" => Ok(Item::Equal),
+            "LBracket" => Ok(Item::LBracket),
+            "RBracket" => Ok(Item::RBracket),
+            "Integer" => Ok(Item::Integer),
+            "Ident" => Ok(Item::Ident),
+            "Quote" => Ok(Item::Quote),
+            _ => Err(()),
+        }
+    }
+}
+
+static RULES: [(&str, &str); 10] = [("Plus", r"\+"),
+                                    ("Minus", r"\-"),
+                                    ("Multiply", r"\*"),
+                                    ("Divide", r"/"),
+                                    ("Equal", r"="),
+                                    ("LBracket", r"\("),
+                                    ("RBracket", r"\)"),
+                                    ("Integer", r"\d+"),
+                                    ("Ident", r"\w+"),
+                                    ("Quote", "^\"[^\n]*?\"")];
 
 lazy_static! {
     static ref NON_TOKEN: Regex = Regex::new(r"^(\s|\n)+").unwrap();
@@ -19,7 +40,7 @@ lazy_static! {
         let re_str =
             RULES.iter()
                 .fold(String::new(), |acc, &(ref rule, ref re)| {
-                    format!("{}(?P<{:?}>{})|", acc, rule, re)
+                    format!("{}(?P<{}>{})|", acc, rule, re)
                 });
         Regex::new(&format!("^({}(?P<Comment>//.+$))", re_str)).unwrap()
     };
@@ -53,9 +74,9 @@ impl<'a> Lexer<'a> {
                     pointer += mat.end() - mat.start();
                 } else {
                     for &(ref rule, _) in RULES.iter() {
-                        if let Some(mat) = cap.name(&format!("{:?}", rule)) {
+                        if let Some(mat) = cap.name(rule) {
                             let token_len = mat.end() - mat.start();
-                            tokens.push(Token(rule.clone(),
+                            tokens.push(Token(rule.parse::<Item>().unwrap(),
                                               &self.src[pointer..pointer + token_len],
                                               Span(pointer, pointer + token_len)));
                             pointer += token_len;
